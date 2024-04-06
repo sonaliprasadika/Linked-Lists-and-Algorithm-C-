@@ -9,34 +9,40 @@ class ListIterator : public std::iterator<std::bidirectional_iterator_tag, T> {
 
     // Pre-Increment, ++iter
     ListIterator& operator++() {
-        // @TODO: graded in MP3.1
-        return *this;
+        if (position_ != nullptr) { // Check to ensure we're not at the end
+            position_ = position_->next; // Move to the next node
+        }
+        return *this; // Return a reference to this iterator after incrementing
     }
-    
+
     // Post-Increment, iter++
     ListIterator operator++(int) {
-        // @TODO: graded in MP3.1
-        ListNode* temp = position_;
-        position_ = position_->next;
-        return ListIterator(NULL);
+        ListIterator temp(*this);  // Make a copy of the current iterator
+        if (position_ != nullptr) {  // Check to ensure we're not at the end
+            position_ = position_->next;  // Move to the next node
+        }
+        return temp;  // Return the copy made before the increment
     }
 
     // Pre-Decrement, --iter
     ListIterator& operator--() {
-        // @TODO: graded in MP3.1
-        position_ = position_->prev;
-        return *this;
+        if (position_ != nullptr) { // Ensure we're not at the beginning or in an invalid state
+            position_ = position_->prev;
+        }
+        return *this; // Return a reference to this iterator after decrementing
     }
 
     // Post-Decrement, iter--
     ListIterator operator--(int) {
-        // @TODO: graded in MP3.1
-        return ListIterator();
+        ListIterator temp(*this);  // Make a copy of the current iterator
+        if (position_ != nullptr) { // Ensure we're not at the beginning or in an invalid state
+            position_ = position_->prev;  // Move to the previous node
+        }
+        return temp;  // Return the copy made before the decrement
     }
 
-    bool operator!=(const ListIterator& rhs) {
-        // @TODO: graded in MP3.1
-        return false;
+    bool operator!=(const ListIterator& rhs) const {
+        return position_ != rhs.position_;
     }
 
     bool operator==(const ListIterator& rhs) {
