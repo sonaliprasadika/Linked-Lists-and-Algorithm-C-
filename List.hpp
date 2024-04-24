@@ -215,51 +215,28 @@ void List<T>::reverse() {
  *  be reversed.
  */
 template <typename T>
-void List<T>::reverse(ListNode*& startPoint, ListNode*& endPoint) {
-    // Validate input
-    if (startPoint == nullptr || endPoint == nullptr || startPoint == endPoint) {
-        return;
+void List<T>::reverse(ListNode*& start, ListNode*& end) {
+    ListNode* prev = nullptr;
+    ListNode* curr = start;
+    ListNode* temp = nullptr;
+
+    while (curr != end) {
+        temp = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = temp;
     }
 
-    ListNode* beforeStart = startPoint->prev;
-    ListNode* afterEnd = endPoint->next;
-    ListNode* current = startPoint;
-    ListNode* tempPrev = nullptr;
+    // Final node (end) reversal
+    end->next = prev;
 
-    while (current != afterEnd) {
-        ListNode* nextNode = current->next;
-        current->next = tempPrev;
-        current->prev = nextNode;
-        tempPrev = current;
-        current = nextNode;
-    }
-
-    // Reconnect the reversed segment with the rest of the list
-    if (beforeStart != nullptr) {
-        beforeStart->next = endPoint;
-    } else {
-        head_ = endPoint; // If reversing from the start, update head_
-    }
-
-    if (afterEnd != nullptr) {
-        afterEnd->prev = startPoint;
-    } else {
-        tail_ = startPoint; // If reversing till the end, update tail_
-    }
-
-    // Swap startPoint and endPoint
-    startPoint->next = afterEnd;
-    if (beforeStart != nullptr) {
-        endPoint->prev = beforeStart;
-    } else {
-        endPoint->prev = nullptr; // endPoint is now the head
-    }
-
-    // Update the references to startPoint and endPoint to their new positions
-    ListNode* temp = startPoint;
-    startPoint = endPoint;
-    endPoint = temp;
+    // Swap start and end pointers
+    temp = start;
+    start = end;
+    end = temp;
 }
+
+
 
 /**
  * Reverses blocks of size n in the current List. You should use your
@@ -269,46 +246,44 @@ void List<T>::reverse(ListNode*& startPoint, ListNode*& endPoint) {
  */
 template <typename T>
 void List<T>::reverseNth(int n) {
-    if (n <= 1 || head_ == nullptr || head_->next == nullptr) {
-        // If n is 1 or less, or the list has 0 or 1 element, no need to reverse.
-        return;
+    if (n < 1 || this->head_ == nullptr) {
+        return;  // If n is less than 1 or the list is empty, do nothing.
     }
 
-    ListNode* currentStart = head_;
-    ListNode* blockEnd = nullptr;
-    ListNode* prevBlockEnd = nullptr;
+    ListNode* dummy = new ListNode(0); // Dummy node to simplify head operations.
+    dummy->next = this->head_;
+    ListNode* prevBlockEnd = dummy; // Points to the end of the last reversed block or dummy initially.
 
-    while (currentStart != nullptr) {
-        // Identify the end of the current block.
-        blockEnd = currentStart;
-        for (int i = 1; i < n && blockEnd->next != nullptr; i++) {
-            blockEnd = blockEnd->next;
+    while (prevBlockEnd->next != nullptr) {
+        ListNode* blockStart = prevBlockEnd->next;
+        ListNode* blockEnd = blockStart;
+        ListNode* curr = blockStart;
+        ListNode* prev = nullptr;
+        ListNode* next = nullptr;
+
+        // Move blockEnd to the end of the block, reversing as we go.
+        int count = n;
+        while (count > 0 && curr != nullptr) {
+            next = curr->next;
+            curr->next = prev;
+            prev = curr;
+            curr = next;
+            blockEnd = prev; // Update blockEnd to the new last node in the block
+            count--;
         }
 
-        // Reverse the current block.
-        ListNode* nextBlockStart = blockEnd->next;
-        reverse(currentStart, blockEnd);
-
-        // Reconnect the reversed block with the rest of the list.
-        if (prevBlockEnd != nullptr) {
-            prevBlockEnd->next = blockEnd;
-            blockEnd->prev = prevBlockEnd;
-        } else {
-            head_ = blockEnd; // Update the head if we reversed the first block.
-        }
-
-        currentStart->next = nextBlockStart;
-        if (nextBlockStart != nullptr) {
-            nextBlockStart->prev = currentStart;
-        } else {
-            tail_ = currentStart; // Update the tail if we reversed the last block.
-        }
+        // Reconnect the previous block's end to the new start of this block.
+        prevBlockEnd->next = blockEnd;
 
         // Prepare for the next block.
-        prevBlockEnd = currentStart;
-        currentStart = nextBlockStart;
+        blockStart->next = curr;
+        prevBlockEnd = blockStart;
     }
+
+    this->head_ = dummy->next; // Update head in case the first block was reversed.
+    delete dummy; // Clean up the dummy node.
 }
+
 
 
 /**
@@ -413,4 +388,3 @@ typename List<T>::ListNode* List<T>::mergesort(ListNode* start, int chainLength)
     // Merge the sorted halves
     return merge(left, right);
 }
-

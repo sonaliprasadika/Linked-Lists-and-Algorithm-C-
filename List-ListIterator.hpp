@@ -1,4 +1,3 @@
-
 class ListIterator : public std::iterator<std::bidirectional_iterator_tag, T> {
   private:
     ListNode* position_;
